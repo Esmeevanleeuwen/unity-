@@ -10,6 +10,8 @@ import { clusters, fieldRelations, selectedStreamDetails, streamItems, type Clus
 import PerceptionPage from './perception/PerceptionPage';
 import { clusterSelections, streamSelections } from './perception/data';
 import type { Selection } from './perception/model';
+import StatePage, { StateTimeline, initialStateCursor } from './state/StatePage';
+import type { StateCursor } from './state/model';
 
 type ViewId = 'field' | 'stream' | 'perception' | 'state' | 'action' | 'feedback' | 'gateways' | 'sources' | 'memory' | 'system';
 type NavItem = { id: ViewId; label: string; description: string; icon: LucideIcon; enabled: boolean };
@@ -17,7 +19,7 @@ const primaryNav: NavItem[] = [
   { id: 'field', label: 'Field', description: 'Live system view', icon: Box, enabled: true },
   { id: 'stream', label: 'Stream', description: 'Incoming information', icon: Waves, enabled: true },
   { id: 'perception', label: 'Perception', description: 'Causal understanding', icon: BrainCircuit, enabled: true },
-  { id: 'state', label: 'State', description: 'Temporal state & change', icon: Activity, enabled: false },
+  { id: 'state', label: 'State', description: 'Temporal state & change', icon: Activity, enabled: true },
   { id: 'action', label: 'Action', description: 'Possible interventions', icon: Target, enabled: false },
   { id: 'feedback', label: 'Feedback', description: 'Reality and response', icon: History, enabled: false },
 ];
@@ -40,7 +42,7 @@ function Topbar({ onAnchor }: { onAnchor: () => void }) {
 function Sidebar({ activeView, onSelect }: { activeView: ViewId; onSelect: (view: ViewId) => void }) {
   const renderNav = (item: NavItem) => {
     const Icon = item.icon;
-    return <button key={item.id} aria-current={activeView === item.id ? 'page' : undefined} className={`nav-item ${activeView === item.id ? 'active' : ''} ${!item.enabled ? 'muted' : ''}`} onClick={() => onSelect(item.id)}>
+    return <button key={item.id} aria-label={item.label} aria-current={activeView === item.id ? 'page' : undefined} className={`nav-item ${activeView === item.id ? 'active' : ''} ${!item.enabled ? 'muted' : ''}`} onClick={() => onSelect(item.id)}>
       <Icon size={21} strokeWidth={1.65} /><span><strong>{item.label}</strong><small>{item.description}</small></span>{!item.enabled && <span className="soon-dot" title="Planned" />}
     </button>;
   };
@@ -143,16 +145,18 @@ function AnchorOverlay({ onClose }: { onClose: () => void }) {
 export default function App() {
   const [activeView, setActiveView] = useState<ViewId>('field');
   const [anchorOpen, setAnchorOpen] = useState(false);
+  const [stateCursor, setStateCursor] = useState<StateCursor>(initialStateCursor);
   const [selectedCluster, setSelectedCluster] = useState('infrastructure');
   const [selectedStream, setSelectedStream] = useState('weather-001');
   const [perceptionSelection, setPerceptionSelection] = useState<Selection>({ kind: 'node', id: 'flood-risk' });
   const navigate = (view: ViewId) => { setAnchorOpen(false); setActiveView(view); };
   const fromField = () => { setPerceptionSelection(clusterSelections[selectedCluster]); navigate('perception'); };
   const fromStream = () => { const selection = streamSelections[selectedStream]; if (selection) { setPerceptionSelection(selection); navigate('perception'); } };
-  return <div className="app-shell"><Topbar onAnchor={() => setAnchorOpen(true)} /><Sidebar activeView={activeView} onSelect={navigate} /><div className="content-shell">
+  return <div className={`app-shell ${activeView === 'state' ? 'has-state-view' : ''}`}><Topbar onAnchor={() => setAnchorOpen(true)} /><Sidebar activeView={activeView} onSelect={navigate} /><div className="content-shell">
     {activeView === 'field' && <FieldPage selectedId={selectedCluster} onSelect={(id) => { setSelectedCluster(id); setPerceptionSelection(clusterSelections[id]); }} onPerception={fromField} />}
     {activeView === 'stream' && <StreamPage selectedId={selectedStream} onSelect={(id) => { setSelectedStream(id); const selection = streamSelections[id]; if (selection) setPerceptionSelection(selection); }} onPerception={fromStream} />}
     {activeView === 'perception' && <PerceptionPage selection={perceptionSelection} onSelect={setPerceptionSelection} onOpenField={(id) => { setSelectedCluster(id); navigate('field'); }} onOpenStream={(id) => { setSelectedStream(id); navigate('stream'); }} anchorOpen={anchorOpen} onOpenAnchor={() => setAnchorOpen(true)} onCloseAnchor={() => setAnchorOpen(false)} />}
-    {!['field', 'stream', 'perception'].includes(activeView) && <PlaceholderPage view={activeView} />}
-  </div><Timeline perception={activeView === 'perception'} />{anchorOpen && activeView !== 'perception' && <AnchorOverlay onClose={() => setAnchorOpen(false)} />}</div>;
+    {activeView === 'state' && <StatePage selection={perceptionSelection} onSelect={setPerceptionSelection} onOpenPerception={(subject) => { setPerceptionSelection(subject); navigate('perception'); }} onOpenStream={(id) => { setSelectedStream(id); navigate('stream'); }} cursor={stateCursor} onCursorChange={setStateCursor} anchorOpen={anchorOpen} onOpenAnchor={() => setAnchorOpen(true)} onCloseAnchor={() => setAnchorOpen(false)} />}
+    {!['field', 'stream', 'perception', 'state'].includes(activeView) && <PlaceholderPage view={activeView} />}
+  </div>{activeView === 'state' ? <StateTimeline cursor={stateCursor} onChange={setStateCursor} frozen={anchorOpen} /> : <Timeline perception={activeView === 'perception'} />}{anchorOpen && activeView !== 'perception' && activeView !== 'state' && <AnchorOverlay onClose={() => setAnchorOpen(false)} />}</div>;
 }

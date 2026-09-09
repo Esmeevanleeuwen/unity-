@@ -1,15 +1,8 @@
 {
   "compilerOptions": {
-    "target": "ES2022",
-    "module": "ESNext",
-    "moduleResolution": "Bundler",
-    "strict": true,
-    "skipLibCheck": true,
-    "types": [],
-    "lib": ["ES2022"],
-    "rootDir": "src",
-    "outDir": ".test-build",
-    "noEmitOnError": true
+    "target": "ES2022", "module": "ESNext", "moduleResolution": "Bundler",
+    "strict": true, "skipLibCheck": true, "types": [], "lib": ["ES2022"],
+    "rootDir": "src", "outDir": ".test-build", "noEmitOnError": true
   },
-  "include": ["src/perception/model.ts", "src/perception/data.ts", "src/mockData.ts"]
+  "include": ["src/perception/model.ts", "src/perception/data.ts", "src/mockData.ts", "src/state/model.ts", "src/state/data.ts"]
 }
