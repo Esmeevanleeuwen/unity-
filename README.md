@@ -1,45 +1,41 @@
 # Unity
 
-Unity is being implemented as a light-mode operational ecosystem: one living system with multiple perceptual views over the same underlying state.
+A light-mode operational ecosystem: one system, different views of its relationships.
 
-## Implemented in this first slice
+**This is a frontend prototype with synthetic demonstration data.** No external provider, AI inference service, graph database, authentication service or live ingestion pipeline is connected. Source names and metrics in the interface are illustrative, not verified real-world observations.
 
-- **Field** — interactive system map with system clusters, causal relations, uncertainty, current focus, system activity and an inspector.
-- **Stream** — live information intake with status filtering, processing lineage from original input to system impact, source provenance, extracted entities and detected relations.
-- **Reality Anchor** — an audit overlay that freezes the current interpretation and exposes observed, derived and missing information alongside the U-01–U-06 checks.
-- Shared **navigation**, **search**, **timeline**, **light-mode design language** and responsive behavior.
+## Available views
 
-The other Unity views are represented in navigation but intentionally remain placeholders until their interaction model is implemented.
+- **Field:** selectable system clusters, map/list presentation, domain filters and an inspector. Open a selected cluster's sample model in Perception.
+- **Stream:** sample records and status filters. The weather example has an authored processing lineage. Other records show their own input rather than borrowing the weather example's metadata. Explicitly linked records can be traced into Perception.
+- **Perception:** an interactive, inspectable relational model with **Structure**, **Evidence** and **Alternatives** views. Includes selectable nodes and edges, search, evidence-status filters, focus, zoom/pan/reset, an accessible list presentation, original-input dialogs and interpretation history.
+- **Reality Anchor:** Perception has a selection-specific inspection dialog with U-01–U-06 prompts, model boundaries and known uncertainties. Checklist statuses are not a certification of truth; no audit decision is saved.
 
-## Design principles currently encoded
+Selection is retained when navigating between views. Perception can open an exact source record in Stream or the associated cluster in Field.
 
-- relation before classification;
-- observation stays separate from interpretation;
-- temporary state stays separate from identity;
-- uncertainty and missing information remain visible;
-- routes should read as possibilities rather than commands;
-- time and feedback are first-class interface dimensions;
-- the interface reduces density when friction is high and reveals depth progressively.
+State, Action, Feedback, Gateways, Sources, Memory and System remain planned views. The shell's global search, historical playback and several older Field controls are still placeholders. Perception's own search, filters and graph controls are functional. Its time rail explicitly shows a static sample snapshot.
 
 ## Run locally
+
+Use Node.js 22 and npm.
 
 ```bash
 npm install
 npm run dev
 ```
 
-Build check:
-
 ```bash
-npm run build
+npm test          # compile and run the dependency-light model regression tests
+npm run build     # full application type check and Vite production build
+npm run preview   # serve the production build
 ```
 
-## Current stack
+The GitHub Actions workflow runs tests followed by the production build. A failed runner startup is not evidence that these commands ran successfully.
 
-- React 19
-- TypeScript
-- Vite
-- Lucide icons
-- CSS/SVG for the system visualization
+## Implementation
 
-The graph is intentionally implemented without a graph framework in the first prototype so the visual grammar can be proven before choosing a long-term graph rendering engine.
+React 19, TypeScript, Vite, Lucide icons and CSS/SVG. No extra runtime dependency was added for Perception.
+
+The hand-authored graph is deliberately small. Its visual layout is not a causal inference algorithm or a replacement for a future graph backend.
+
+See [Perception implementation notes](docs/PERCEPTION.md) for data contracts, limitations, document references and manual checks.
